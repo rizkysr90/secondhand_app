@@ -1,0 +1,71 @@
+[
+  {
+    "price" : 70000,
+    "status" : null,
+    "product_id" : 8,
+    "buyer_id" : 1,
+    "seller_id" : 2
+  },
+  {
+    "price" : 50000,
+    "buyer_id": 1,
+    "product_id" : 5,
+    "seller_id" : 2
+  },
+  {
+    "price" : 1000000,
+    "buyer_id" : 2,
+    "product_id" : 1,
+    "seller_id" : 1
+  },
+  {
+    "price" : 5000000,
+    "buyer_id" : 2,
+    "product_id" : 2,
+    "seller_id" : 1
+  },
+   {
+    "price" : 5000000,
+    "buyer_id" : 1,
+    "product_id" : 10,
+    "seller_id" : 4,
+     "status" : 0,
+     "is_done" : 0
+  },
+   {
+    "price" : 5500000,
+    "buyer_id" : 2,
+    "product_id" : 10,
+    "seller_id" : 4,
+    "status" : 0,
+    "is_done" : 0
+  },
+  {
+    "price" : 7000000,
+    "buyer_id" : 3,
+    "product_id" : 10,
+    "seller_id" : 4,
+    "status" : 1,
+    "is_done" : 1
+  },
+  {
+    "price" : 2000000,
+    "buyer_id" : 1,
+    "product_id" : 9,
+    "seller_id" : 4,
+    "status" : 1
+  },
+  {
+    "price" : 2500000,
+    "buyer_id": 2,
+    "product_id" : 9,
+    "seller_id" : 4
+  },
+  {
+    "price" : 3500000,
+    "buyer_id": 3,
+    "product_id" : 9,
+    "seller_id" : 4
+  }
+  
+]

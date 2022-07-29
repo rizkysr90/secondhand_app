@@ -1,0 +1,42 @@
+[
+  {
+    "name" : "Uchiha Itachi",
+    "email" : "user1@gmail.com",
+    "password" : "123456789",
+    "profile_picture" : "https://i.pinimg.com/736x/30/6f/3b/306f3bea7138aa2afecd104672c011d9.jpg",
+    "phone_number" : "081284500478",
+    "address" : "Jl. Medan Merdeka Utara No.3, RT.2/RW.3",
+    "city_id" : 413,
+    "profile_picture_id" : null
+  },
+  {
+    "name" : "Uchiha Sasuke",
+    "email" : "user2@gmail.com",
+    "password" : "123456789",
+    "profile_picture" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnZbAx6RcENSQzs1fwtDQrlJOK7jOf9skUIA&usqp=CAU",
+    "phone_number" : "0812845004128",
+    "address" : "Jl. Bekasi Merdeka Utara No.3, RT.2/RW.3",
+    "city_id" : 1,
+    "profile_picture_id" : null
+  },
+    {
+    "name" : "Uzumaki Naruto",
+    "email" : "user3@gmail.com",
+    "password" : "123456789",
+    "profile_picture" : "https://64.media.tumblr.com/9e29ee129eac97c1bb2ffcce30c88522/f43ed6518762ec29-5f/s1280x1920/8ba8d9b56d94758e8bdcb7a3b7c535013b55592a.jpg",
+    "phone_number" : "081234500478",
+    "address" : "Jl. Jakarta Merdeka Utara No.3, RT.2/RW.3",
+    "city_id" : 4,
+    "profile_picture_id" : null
+  },
+   {
+    "name" : "Uzumaki Boruto",
+    "email" : "user4@gmail.com",
+    "password" : "123456789",
+    "profile_picture" : "https://avatarfiles.alphacoders.com/140/140844.png",
+    "phone_number" : "081380549054",
+    "address" : "Jl. Amegakure Merdeka Utara No.3, RT.2/RW.3",
+    "city_id" : 19,
+    "profile_picture_id" : null
+  }
+]

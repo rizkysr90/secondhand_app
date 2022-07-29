@@ -1,0 +1,92 @@
+[
+  {
+    "name" : "Honda Beat Vario 2017 Bekas",
+    "price" : 3000000,
+    "description" : "Honda beat vario 2017 terkuat di Bumi",
+    "isActive" : true,
+    "status" : true,
+    "id_user": 1,
+    "id_category" : 2
+  },
+  {
+    "name" : "Yamaha Vixion 2017 Bekas",
+    "price" : 6000000,
+    "description" : "Yamaha Vixion 2017 terkuat di Bumi",
+    "isActive" : false,
+    "status" : false,
+    "id_user": 1,
+    "id_category" : 2
+  },
+   {
+    "name" : "Yamaha Jupiter 2017 Bekas",
+    "price" : 5000000,
+    "description" : "Yamaha Jupiter 2017 terkuat di Bumi",
+    "isActive" : true,
+    "status" : true,
+    "id_user": 1,
+    "id_category" : 2
+  },
+   {
+    "name" : "Satria FU 2017 Bekas",
+    "price" : 5500000,
+    "description" : "Satria FU 2017 terkuat di Bumi",
+    "isActive" : true,
+    "status" : true,
+    "id_user": 1,
+    "id_category" : 2
+  },
+   {
+    "name" : "T-Shirt Supima Cotton Crew Neck Lengan Pendek Bekas",
+    "price" : 70000,
+    "description" : "T-shirt Pria dan Wanita dari 100% Supima® cotton yang lembut. Desain crew neck yang mudah dipadupadankan.",
+    "isActive" : true,
+    "status" : true,
+    "id_user": 2,
+    "id_category" : 1
+  },
+  {
+    "name" : "AIRism Katun T-Shirt Oversized Crew Neck Uniqlo U Bekasi",
+    "price" : 80000,
+    "description" : "T-shirt Pria dan Wanita dengan tampilan katun dan performa AIRism. Desain neckline lebih kecil membuatnya terlihat clean dan rapi",
+    "isActive" : true,
+    "status" : true,
+    "id_user": 2,
+    "id_category" : 1
+  },
+  {
+    "name" : "T-Shirt Dry Warna Crew Neck Lengan Pendek Bekas",
+    "price" : 40000,
+    "description" : "T-shirt pria dan wanita yang simpel dan mudah dipadupadankan. Tetap kering dan nyaman di kulit. Untuk alasan kesehatan, produk ini tidak dapat dikembalikan.",
+    "isActive" : true,
+    "status" : true,
+    "id_user": 2,
+    "id_category" : 1
+  },
+  {
+    "name" : "T-Shirt Oversized Saku Crew Neck Lengan Half Bekasi",
+    "price" : 100000,
+    "description" : "T-shirt pria dan wanita yang simpel dan mudah dipadupadankan. Tetap kering dan nyaman di kulit. Untuk alasan kesehatan, produk ini tidak dapat dikembalikan.",
+    "isActive" : true,
+    "status" : true,
+    "id_user": 2,
+    "id_category" : 1
+  },
+  {
+    "name" : "Nissan GTR 2019 Feat Skylar Bekas",
+    "price" : 9000000,
+    "description" : "Nissan GTR 2019 terkuat di Bumi",
+    "isActive" : true,
+    "status" : true,
+    "id_user": 4,
+    "id_category" : 2
+  },
+  {
+    "name" : "Xenia Aventador 2020 Bekas",
+    "price" : 8000000,
+    "description" : "Xenia aventador terkuat di Bumi",
+    "isActive" : false,
+    "status" : false,
+    "id_user": 4,
+    "id_category" : 2
+  }
+]

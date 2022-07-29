@@ -1,0 +1,17 @@
+[
+    {
+        "name" : "produk diterbitkan",
+        "description" : "produk berhasil di terbitkan",
+        "table" : "Products"
+    },
+    {
+        "name" : "penawaran produk dibuat",
+        "description" : "user melakukan penawaran produk",
+        "table" : "Orders"
+    },
+    {
+        "name" : "penawaran diterima",
+        "description" : "order user di terima oleh seller",
+        "table" : "Orders"
+    }
+]
