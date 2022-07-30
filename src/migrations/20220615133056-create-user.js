@@ -26,6 +26,10 @@ module.exports = {
       name: {
         type: Sequelize.STRING
       },
+      confirm_email : {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

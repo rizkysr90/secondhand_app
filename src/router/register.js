@@ -10,5 +10,7 @@ router.post('/',
             validator.create(),
             validate,
             controller.createUser);
-
+router.get('/confirmation/:emailToken',
+            controller.confirm_email
+)
 module.exports = router;

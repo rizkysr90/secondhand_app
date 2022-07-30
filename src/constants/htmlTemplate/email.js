@@ -1,4 +1,4 @@
-const new_user = `<table width="100%" cellpadding="0" cellspacing="0" border="0">
+const new_user_template = `<table width="100%" cellpadding="0" cellspacing="0" border="0">
 <tbody>
   <tr>
     <td width="100%">
@@ -56,7 +56,7 @@ const new_user = `<table width="100%" cellpadding="0" cellspacing="0" border="0"
                                 <td
                                   style="background-color:#00aff5;color:#fff;text-align:center;border-radius:48px;padding:16px 24px;border-color:transparent;font-weight:bold;font-size:16px;line-height:1"
                                 >
-                                    <a style=color:#fff; href = "#" target = "_blank">Click Here</a>
+                                    <a style=color:#fff; href = "<%= url %>" target = "_blank">Click Here</a>
                                 </td>
                               </tr>
                               <tr >
@@ -148,5 +148,5 @@ const new_user = `<table width="100%" cellpadding="0" cellspacing="0" border="0"
 </table>`
 
 module.exports = {
-  new_user
+  new_user_template
 }

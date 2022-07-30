@@ -2,6 +2,7 @@ const {User,City} = require('./../models/');
 const fs = require('fs');
 const response = require('./../utility/responseModel');
 const {CustomError} = require('./../utility/responseModel');
+const jwt = require('jsonwebtoken');
 const bcrypt = require('../utility/bcrypt');
 const issueJWT = require('../utility/issueJwt');
 const {sendEmailSMTP,generateTemplateEmail} = require('../utility/nodemailer');
@@ -34,7 +35,6 @@ const createUser = async (req,res,next) => {
             // response.error merupakan utility yang dibuat di folder utility/responseModel.js
             // Saat mau mengembalikan response dari request wajib melakukan return agar server tidak error
             throw new CustomError(400,'email was used by others')
-            
         }
         // Sebelum create user di database,password harus di enkripsi terlebih dahulu
         const hashedPassword = await bcrypt.hash(password);
@@ -43,25 +43,37 @@ const createUser = async (req,res,next) => {
         const userData = {
             email : email,
             password : hashedPassword,
-            name : name,
-            profile_picture : null,
-            phone_number : null,
-            address : null,
-            city_id : null
+            name : name
         }
         // Membuat user ke database
         const createUser = await User.create(userData);
         // Send email confirmation after success to create new user
-        const emailTemplate = await generateTemplateEmail({
-            type : "new_account",
-            name : name
-        })
-        await sendEmailSMTP({
-            receiver : email,
-            subject : "Secondhand - Email Verification",
-            text : `Hi ${name},welcome to Secondhand`,
-            html : emailTemplate
-        })
+        jwt.sign({
+            user : createUser.id
+        },
+        process.env.EMAIL_SECRET,
+        {
+            expiresIn: '1d'
+        },
+        async (err,emailToken) => {
+            if (err) {
+                next(err);
+            }
+            const url = `http://localhost:3000${process.env.BASE_URL}${process.env.URL_ROUTER_REGISTER}/confirmation/${emailToken}`
+            const emailTemplate = await generateTemplateEmail({
+                type : "new_account",
+                name : name,
+                confirm_email : url
+            })
+            sendEmailSMTP({
+                receiver : email,
+                subject : "Secondhand - Email Verification",
+                text : `Hi ${name},welcome to Secondhand`,
+                html : emailTemplate
+            })
+           
+        }
+        )
         // Jika berhasil,buat data untuk diberikan pada response
         // data yang credential seperti password,email,address tidak usah dikirim di response
         // kecuali jika dibutuhkan
@@ -73,9 +85,17 @@ const createUser = async (req,res,next) => {
         res.status(201).json(response.success(201,responseBody));
     } catch(err) {
         next(err);
-      
     }
 
+}
+const confirm_email = async (req,res,next) => {
+    try {
+        const {user : userId} = jwt.verify(req.params.emailToken,process.env.EMAIL_SECRET);
+        await User.update({confirm_email : true},{where : {id : userId}})
+        res.status(200).json(response.success(200,'email berhasil di verifikasi'))
+    } catch (error) {
+        next(error);
+    }
 }
 const login = async (req,res) => {
     try {
@@ -218,6 +238,7 @@ module.exports = {
     createUser,
     login,
     updateProfile,
-    getProfileById
+    getProfileById,
+    confirm_email
 
 }
