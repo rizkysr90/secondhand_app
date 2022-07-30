@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const routerUser = require('./user');
 const routerRegister = require('./register');
 const routerLogin = require('./login');
 const routerProfile = require('./profile');
@@ -13,7 +12,6 @@ const routerOrderSeller =require('./orderSeller');
 const routerNotifications = require('./notifikasi')
 
 router.use(`${process.env.URL_ROUTER_REGISTER}`,routerRegister)
-router.use(`${process.env.URL_ROUTER_USER}`, routerUser)
 router.use(`${process.env.URL_ROUTER_LOGIN}`,routerLogin)
 router.use(`${process.env.URL_ROUTER_PROFILE}`,routerProfile)
 router.use(`${process.env.URL_ROUTER_MYPRODUCT}`, routermyProduct)

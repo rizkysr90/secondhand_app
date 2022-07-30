@@ -1,9 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const controllerUser = require('../controller/controller.user');
+const controller = require('../controller/controller.user');
 const validate = require('./../middleware/expressValidator');
-const userValidator = require('./../middleware/validator/user.validator');
-const userSanitize = require('./../middleware/sanitize/user.sanitize');
-router.post('/',userSanitize.create(),userValidator.create(),validate,controllerUser.createUser);
+const validator = require('./../middleware/validator/user.validator');
+const sanitize = require('./../middleware/sanitize/user.sanitize');
+
+router.post('/',
+            sanitize.create(),
+            validator.create(),
+            validate,
+            controller.createUser);
 
 module.exports = router;

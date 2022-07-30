@@ -1,24 +1,27 @@
 const {User,City} = require('./../models/');
 const fs = require('fs');
 const response = require('./../utility/responseModel');
+const {CustomError} = require('./../utility/responseModel');
 const bcrypt = require('../utility/bcrypt');
 const issueJWT = require('../utility/issueJwt');
+const {sendEmailSMTP,generateTemplateEmail} = require('../utility/nodemailer');
 const cloudinary = require('../utility/cloudinary')
 const uploader = async (path,opts) => await cloudinary.uploadCloudinary(path,opts);
 const deleteAtCld = async (path,opts) => await cloudinary.deleteCloudinary(path);
 
-const dataUserAll = (req,res) => {
-    res.status(200).json({
-        messege : 'Succcess'
-    })
-}
 
 const createUser = async (req,res,next) => {
     // Pakai try catch untuk handle error by server agar bisa ditangkap
     try {
-
-        // Di req.body akan ada data = {email,password,name} untuk register
-        const {email,password,name} = req.body
+        const {name,email,password,confirm_password} = req.body
+        if (confirm_password !== password) {
+            throw new CustomError(400,'confirm_password not equal to passowrd');
+        }
+        //  Regex only alphabet and spaces
+        let patternAlphaAndSpaceOnly = /^[a-zA-Z ]*$/;
+        if (!patternAlphaAndSpaceOnly.test(name)) {
+            throw new CustomError(400,'name is not allowed to contains number and symbol')
+        }
         // Email harus unique,jadi sebelum create melakukan validasi
         // dengan cara findOne dengan menggunakan email
         const findUserByEmail = await User.findOne({
@@ -30,37 +33,47 @@ const createUser = async (req,res,next) => {
         if (findUserByEmail) {
             // response.error merupakan utility yang dibuat di folder utility/responseModel.js
             // Saat mau mengembalikan response dari request wajib melakukan return agar server tidak error
-            return res.status(400).json(response.error(400,'Email sudah digunakan'));
+            throw new CustomError(400,'email was used by others')
             
         }
         // Sebelum create user di database,password harus di enkripsi terlebih dahulu
         const hashedPassword = await bcrypt.hash(password);
         // Buat data yang akan dimasukkan ke database,karna untuk data profile secara default harus null
         // jadi untuk menambahkan data profile bisa melakukan update user saja
-        const dataToBeInsertToDatabase = {
+        const userData = {
             email : email,
             password : hashedPassword,
+            name : name,
             profile_picture : null,
             phone_number : null,
             address : null,
-            city_id : null,
-            name : name
+            city_id : null
         }
         // Membuat user ke database
-        const createUser = await User.create(dataToBeInsertToDatabase);
+        const createUser = await User.create(userData);
+        // Send email confirmation after success to create new user
+        const emailTemplate = await generateTemplateEmail({
+            type : "new_account",
+            name : name
+        })
+        await sendEmailSMTP({
+            receiver : email,
+            subject : "Secondhand - Email Verification",
+            text : `Hi ${name},welcome to Secondhand`,
+            html : emailTemplate
+        })
         // Jika berhasil,buat data untuk diberikan pada response
         // data yang credential seperti password,email,address tidak usah dikirim di response
         // kecuali jika dibutuhkan
-        const dataToBeSentToResponse = {
+        const responseBody = {
             id : createUser.id,
             name : createUser.name
         }
         // Saat mau mengembalikan response dari request wajib melakukan return agar server tidak error
-        return res.status(201).json(response.success(201,dataToBeSentToResponse));
+        res.status(201).json(response.success(201,responseBody));
     } catch(err) {
-        console.log(err);
-        // Saat mau mengembalikan response dari request wajib melakukan return agar server tidak error
-        return res.status(500).json(response.error(500,'Internal Server Error'));
+        next(err);
+      
     }
 
 }
@@ -202,7 +215,6 @@ const getProfileById = async (req,res) => {
 
 
 module.exports = {
-    dataUserAll,
     createUser,
     login,
     updateProfile,
