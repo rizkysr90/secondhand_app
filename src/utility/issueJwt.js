@@ -7,8 +7,7 @@ const issueJWT = (user) => {
     };
     const signedToken = jsonwebtoken.sign(payload, process.env.JWT_SECRET, { expiresIn: "1 days" });
     return {
-        token : signedToken,
-        expires: expiresIn
+        token : signedToken
     }
 }
 

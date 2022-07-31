@@ -6,7 +6,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('../utility/bcrypt');
 const issueJWT = require('../utility/issueJwt');
 const {sendEmailSMTP,generateTemplateEmail} = require('../utility/nodemailer');
-const cloudinary = require('../utility/cloudinary')
+const cloudinary = require('../utility/cloudinary');
+const { Op } = require('sequelize');
 const uploader = async (path,opts) => await cloudinary.uploadCloudinary(path,opts);
 const deleteAtCld = async (path,opts) => await cloudinary.deleteCloudinary(path);
 
@@ -14,27 +15,27 @@ const deleteAtCld = async (path,opts) => await cloudinary.deleteCloudinary(path)
 const createUser = async (req,res,next) => {
     // Pakai try catch untuk handle error by server agar bisa ditangkap
     try {
-        const {name,email,password,confirm_password} = req.body
+        const {username,email,password,confirm_password} = req.body
         if (confirm_password !== password) {
             throw new CustomError(400,'confirm_password not equal to passowrd');
         }
-        //  Regex only alphabet and spaces
-        let patternAlphaAndSpaceOnly = /^[a-zA-Z ]*$/;
-        if (!patternAlphaAndSpaceOnly.test(name)) {
-            throw new CustomError(400,'name is not allowed to contains number and symbol')
-        }
-        // Email harus unique,jadi sebelum create melakukan validasi
-        // dengan cara findOne dengan menggunakan email
-        const findUserByEmail = await User.findOne({
+        // //  Regex only alphabet and spaces
+        // let patternAlphaAndSpaceOnly = /^[a-zA-Z ]*$/;
+        // if (!patternAlphaAndSpaceOnly.test(name)) {
+        //     throw new CustomError(400,'name is not allowed to contains number and symbol')
+        // }
+        // Email dan username harus unique,jadi sebelum create data melakukan validasi
+        // dengan cara findOne dengan menggunakan email dan username
+        const findUserByEmailOrUsername = await User.findOne({
             where : {
-                email
+                [Op.or] : [{email:email},{username:username}] 
             }
         })
         // Jika ditemukan/true maka kembalikan response error dan jika false maka bisa membuat user
-        if (findUserByEmail) {
+        if (findUserByEmailOrUsername) {
             // response.error merupakan utility yang dibuat di folder utility/responseModel.js
             // Saat mau mengembalikan response dari request wajib melakukan return agar server tidak error
-            throw new CustomError(400,'email was used by others')
+            throw new CustomError(400,'email or username was used by others')
         }
         // Sebelum create user di database,password harus di enkripsi terlebih dahulu
         const hashedPassword = await bcrypt.hash(password);
@@ -43,7 +44,7 @@ const createUser = async (req,res,next) => {
         const userData = {
             email : email,
             password : hashedPassword,
-            name : name
+            username : username
         }
         // Membuat user ke database
         const createUser = await User.create(userData);
@@ -62,13 +63,13 @@ const createUser = async (req,res,next) => {
             const url = `http://localhost:3000${process.env.BASE_URL}${process.env.URL_ROUTER_REGISTER}/confirmation/${emailToken}`
             const emailTemplate = await generateTemplateEmail({
                 type : "new_account",
-                name : name,
+                username : username,
                 confirm_email : url
             })
             sendEmailSMTP({
                 receiver : email,
                 subject : "Secondhand - Email Verification",
-                text : `Hi ${name},welcome to Secondhand`,
+                text : `Hi ${username},welcome to Secondhand`,
                 html : emailTemplate
             })
            
@@ -79,7 +80,7 @@ const createUser = async (req,res,next) => {
         // kecuali jika dibutuhkan
         const responseBody = {
             id : createUser.id,
-            name : createUser.name
+            username : createUser.username
         }
         // Saat mau mengembalikan response dari request wajib melakukan return agar server tidak error
         res.status(201).json(response.success(201,responseBody));
@@ -90,40 +91,58 @@ const createUser = async (req,res,next) => {
 }
 const confirm_email = async (req,res,next) => {
     try {
-        const {user : userId} = jwt.verify(req.params.emailToken,process.env.EMAIL_SECRET);
+        let userId
+        jwt.verify(req.params.emailToken,process.env.EMAIL_SECRET,function(err,decoded) {
+            if (err) {
+                throw new CustomError(400,err.message);
+            } else {
+                userId = decoded.user
+            }
+        });
         await User.update({confirm_email : true},{where : {id : userId}})
         res.status(200).json(response.success(200,'email berhasil di verifikasi'))
     } catch (error) {
         next(error);
     }
 }
-const login = async (req,res) => {
+const login = async (req,res,next) => {
     try {
         // Di request body ada data email dan password
-        const {email,password} = req.body;
-        // Mencari user dengan email yang diberikan oleh user
-        const findUser = await User.findOne({
-            where : {
-                email
+        const {identity,password} = req.body;
+        const findUniqueUserOpts = {}
+        
+        if (identity.indexOf('@') === -1) {
+            // identity should be username
+            findUniqueUserOpts.where = {
+                username : identity
             }
-        });
+        } else {
+            findUniqueUserOpts.where = {
+                email : identity
+            }
+        }
+        // Mencari user dengan email/username yang diberikan oleh user
+        const findUser = await User.findOne(findUniqueUserOpts);
         if (!findUser) {
             // Kalau pencarian user tidak ketemu,maka akan merespon dengan 404
-            return res.status(404).json(response.error(404,"User not found"));
+            throw new CustomError(404,'user not found')
         }
-        // Jika pencarian ketemu,maka dicompare passwordnya dengan hashnya
+        if (!findUser.confirm_email) {
+            // email belum diverifikasi
+            throw new CustomError(403,'email is not verified')
+        }
         const verifyPassword = await bcrypt.compare(password,findUser.password);
         if (!verifyPassword) {
-            return res.status(400).json(response.error(400,"Password tidak sesuai"));
+            // password salah
+            throw new CustomError(400,'password doesn\'t match');
         }
         // Jika password sesuai,server membuat jwt token untuk authorization
         const jwt = issueJWT(findUser);
-        // add id to response body
-        jwt.id = findUser.id
+        // add jwt for response body and add username user
+        jwt.username = findUser.username
         return res.status(200).json(response.success(200,jwt));
     } catch (err) {
-        console.log(err);
-        return res.status(500).json(response.error(500,'Internal Server Error'));
+        next(err);
     }
 }
 const updateProfile = async (req,res) => {

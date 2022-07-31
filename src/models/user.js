@@ -33,7 +33,8 @@ module.exports = (sequelize, DataTypes) => {
     address: DataTypes.STRING,
     city_id: DataTypes.INTEGER,
     name: DataTypes.STRING,
-    confirm_email : DataTypes.BOOLEAN
+    confirm_email : DataTypes.BOOLEAN,
+    username : DataTypes.STRING
   }, {
     sequelize,
     modelName: 'User',

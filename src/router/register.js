@@ -6,11 +6,13 @@ const validator = require('./../middleware/validator/user.validator');
 const sanitize = require('./../middleware/sanitize/user.sanitize');
 
 router.post('/',
-            sanitize.create(),
+sanitize.create(),
             validator.create(),
             validate,
             controller.createUser);
 router.get('/confirmation/:emailToken',
+            validator.confirm_email(),
+            validate,
             controller.confirm_email
 )
 module.exports = router;

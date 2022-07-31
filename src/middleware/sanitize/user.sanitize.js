@@ -1,7 +1,7 @@
 const { body, param, query } = require('express-validator');
 const create = () => {
     return [
-        body(['email','password','confirm_password','name']).trim()
+        body('email').trim(),
     ]
 }
 const update = () => {

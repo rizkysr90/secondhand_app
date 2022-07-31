@@ -41,6 +41,7 @@
     "pm2": "^5.2.0",
     "sequelize": "^6.20.1",
     "sequelize-cli": "^6.4.1",
+    "slugify": "^1.6.5",
     "supertest": "^6.2.3",
     "test": "^3.0.1"
   },

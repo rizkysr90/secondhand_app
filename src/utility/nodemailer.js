@@ -2,11 +2,11 @@ const nodemailer = require('nodemailer');
 const {new_user_template} = require('./../constants/htmlTemplate/email');
 const ejs = require('ejs');
 
-async function generateTemplateEmail({type,name,confirm_email}) {
+async function generateTemplateEmail({type,username,confirm_email}) {
     if (type === "new_account") {
         let emailTemplate;
         const dynamicDataInEjs = {
-            user : name,
+            user : username,
             url : confirm_email
         }
         const options = {
