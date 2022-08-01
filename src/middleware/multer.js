@@ -1,8 +1,10 @@
 const multer = require('multer');
 const response = require('./../utility/responseModel');
 const fs = require('fs');
+const {CustomError} = require('./../utility/responseModel')
 
 const storage = multer.diskStorage({
+    // storage system
     destination: (req, file, cb) => {
         const fileLocation = 'public/static/images';
         if (!fs.existsSync(fileLocation)) fs.mkdirSync(fileLocation, { recursive: true });
@@ -15,29 +17,27 @@ const storage = multer.diskStorage({
 });
 
 const MulterError = (err, req, res, next) => {
-    console.log(err);
     const makeResponseObj = {
         location : err.field
     }
     // Mendapatkan Error multer dari filed MulterError
-    console.log('MASOKKKKK')
-    if (err instanceof multer.MulterError) {
-        console.log('inside multer limit file size')
-        if (err.code === 'LIMIT_FILE_SIZE') {
-            makeResponseObj.message = 'file terlalu besar,maksimal 2mb';
-            return res.status(400).json(response.error(400,makeResponseObj));
+    try {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                throw new CustomError(400,'maximum file size only 2mb');
+            }
+            if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+                throw new CustomError(400,'format file only accept jpg,png,and jpeg')
+            } else {
+                throw new CustomError(400,err.code);
+            }
+        } else if (err) {
+            throw new CustomError();
         }
-        if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-        console.log('inside multer unexpected file')
-            makeResponseObj.message = 'Format Gambar Hanya bisa Jpg, Png, jpeg';
-            return res.status(400).json(response.error(400,makeResponseObj));
-        } else {
-            return res.status(400).json(response.error(400,err.code));
-        }
-    } else if (err) {
-        return res.status(500).json(response.error(500,'Internal Server Error'))
+        next()
+    } catch (err) {
+        next(err)
     }
-    next()
 }
 const fileFilterImage = (req,file,cb) => {
     // Tipe file yang valid
@@ -59,7 +59,6 @@ const upload = multer({
     limits: {
         fileSize: 2000000
     }
-   
 })
 
   

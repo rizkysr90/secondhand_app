@@ -1,5 +1,13 @@
 const { body, param, query } = require('express-validator');
 
+const resendEmail = () => {
+    return [
+        body('email','email does\'nt meet the requirement').notEmpty().isEmail(),
+        body('username','username can\'t be empty').notEmpty(),
+        body('username','username does\'nt meet the requirement')
+        .not().contains(" ").bail().isLowercase().bail().isAlphanumeric()
+    ]
+}
 const create = () => {
     const stringField = ['email','username','confirm_password','password'];
 
@@ -30,12 +38,11 @@ const login = () => {
 }
 const update = () => {
     return [
-        body('name','nama wajib diisi').notEmpty(),
-        body('city_id','kota wajib diisi').notEmpty(),
-        body('phone_number','no hp wajib diisi').notEmpty(),
-        body('address','alamat wajib diisi').notEmpty(),
-        body('phone_number','nomor hp tidak valid').isMobilePhone(['id-ID']),
-        body('city_id','city_id harus integer').isInt(),
+        body('name','name cannot be empty string').notEmpty(),
+        body('city_id','city_id cannot be empty').notEmpty(),
+        body('address','address cannot be empty string').notEmpty(),
+        // body('phone_number','nomor hp tidak valid').isMobilePhone(['id-ID']),
+        body('city_id','city_id must be an integer').isInt(),
     ]
 }
 const confirm_email = () => {
@@ -47,5 +54,6 @@ module.exports = {
     create,
     login,
     update,
-    confirm_email
+    confirm_email,
+    resendEmail
 }

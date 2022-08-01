@@ -10,9 +10,9 @@ const optionsForDecodeJWT = {
 
 const strategy = new JwtStrategy(optionsForDecodeJWT,async (payload,done) => {
     const options = {
-        attributes: {exclude: ['password','createdAt','updatedAt']},
+        attributes: {exclude: ['password']},
         where : {
-            id : payload.sub
+            username : payload.sub
         }
     };
     try {

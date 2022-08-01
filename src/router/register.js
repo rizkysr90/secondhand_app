@@ -15,4 +15,11 @@ router.get('/confirmation/:emailToken',
             validate,
             controller.confirm_email
 )
+
+router.get('/resend-email',
+            validator.resendEmail(),
+            validate,
+            controller.resendEmail
+)
+    
 module.exports = router;

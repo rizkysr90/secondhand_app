@@ -6,9 +6,9 @@ const create = () => {
 }
 const update = () => {
     return [
-        param('user_id').toInt(),
-        body('name').trim(),
-        body('city_id').toInt()
+        body('city_id').toInt(),
+        body(['name','address']).trim(),
+        param('username').toLowerCase()
     ]
 }
 

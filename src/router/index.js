@@ -11,6 +11,12 @@ const routerOrderBuyer = require('./order_buyer')
 const routerOrderSeller =require('./orderSeller');
 const routerNotifications = require('./notifikasi')
 
+router.use(`/emailconfirmed`,(req,res) => {
+    res.send('email was confirmed')
+})
+router.use('/invalid',(req,res) => {
+    res.send('invalid proccess')
+})
 router.use(`${process.env.URL_ROUTER_REGISTER}`,routerRegister)
 router.use(`${process.env.URL_ROUTER_LOGIN}`,routerLogin)
 router.use(`${process.env.URL_ROUTER_PROFILE}`,routerProfile)

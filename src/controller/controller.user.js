@@ -79,7 +79,6 @@ const createUser = async (req,res,next) => {
         // data yang credential seperti password,email,address tidak usah dikirim di response
         // kecuali jika dibutuhkan
         const responseBody = {
-            id : createUser.id,
             username : createUser.username
         }
         // Saat mau mengembalikan response dari request wajib melakukan return agar server tidak error
@@ -94,13 +93,17 @@ const confirm_email = async (req,res,next) => {
         let userId
         jwt.verify(req.params.emailToken,process.env.EMAIL_SECRET,function(err,decoded) {
             if (err) {
-                throw new CustomError(400,err.message);
+                res.redirect(`http://localhost:3000${process.env.BASE_URL}/invalid`)
             } else {
                 userId = decoded.user
             }
         });
+        const userFindById = User.findByPk(userId);
+        if (userFindById.confirm_email) {
+            res.redirect(`http://localhost:3000${process.env.BASE_URL}/emailconfirmed`)
+        } 
         await User.update({confirm_email : true},{where : {id : userId}})
-        res.status(200).json(response.success(200,'email berhasil di verifikasi'))
+        res.redirect(`http://localhost:3000${process.env.BASE_URL}/emailconfirmed`)
     } catch (error) {
         next(error);
     }
@@ -145,31 +148,41 @@ const login = async (req,res,next) => {
         next(err);
     }
 }
-const updateProfile = async (req,res) => {
+const updateProfile = async (req,res,next) => {
     try {
         // untuk mendeklarasikan fungsi yang berada di cloudinary dengan async await 
         // console.log(req.params);
-        const dataUserFromJWT = req.user
-        const {user_id} = req.params;
+        const userAuth = req.user
+        const {username} = req.params;
         // Cek apakah user yang request dengan params user_id sesuai dengan user_id di jwt (req.user.id)
-        if (!(+user_id === dataUserFromJWT.id)) {
+        if (!(username === userAuth.username)) {
             fs.unlinkSync(req.file.path);
-            return res.status(401).json(response.error(401,'Anda tidak memiliki akses'));
+            throw CustomError(401,'you dont have an access')
+        }
+        const userFindByUsername = await User.findOne({where : {username}})
+        if (!userFindByUsername) {
+            throw new CustomError(404,'user not found');
+        }
+        if (!userFindByUsername.confirm_email) {
+            // email not verified
+            throw new CustomError(403,'email is not verified');
+        }
+        if (userAuth.username !== username) {
+            throw new CustomError(401,'you dont have an access');
         }
         // Cek apakah request mengirimkan sebuah file upload atau tidak
         if (req.file === undefined) {
-            // Menghapus sequelize profile_picture field di model User,agar tidak mengupdate
-            // profile_picture saat value data dari req.file === undefined / user tidak memasukkan file
-            let fieldsToUpdate = ["phone_number","address","name","city_id"];
+            // update profile tanpa photo_profile
+            let fieldsToUpdate = ["address","name","city_id"];
             // Update user dimana id sama dengan user_id
             await User.update(req.body,{
                 where : {
-                    id : +user_id
+                    username
                 },
                 fields : fieldsToUpdate
             })
             // Jika berhasil response 200 / succes
-            return res.status(200).json(response.success(200,"Success update data"));
+            res.status(200).json(response.success(200,"success update data"));
         } else {
             // upload image yang sudah dioptimasi ke cld
             // referensi docs -> https://cloudinary.com/documentation/image_upload_api_reference#upload_examples
@@ -178,82 +191,122 @@ const updateProfile = async (req,res) => {
                 folder: "secondhand_app/image/profile_picture"
             }
             const uploadImageResponse = await uploader(req.file.path,optionsCloudinary);
-            
-            // const uploadImageResponse = await cloudinary.uploader.upload(req.file.path, {
-            //     resource_type: "image",
-            //     folder: "secondhand_app/image/profile_picture",
-            //     eager_async: true,
-            //     eager : {quality: 50}
-    
-            // });
+           
             // Mendestructuring publicId sebagai profile_picture_id,dan url hasil optimisasi gambar
             const {public_id,eager} = uploadImageResponse;
             // eager is the result of optimization image
-            const secure_url = eager[0].secure_url;
-            // let fieldsToUpdate = ["profile_picture","public_name","phone_number","address","name","city_id","profile_picture_id"];
+            const [imageOptimization] = eager;
+            const {secure_url} = imageOptimization;
             // Menambahkan profile_picture dan profile_picture_id ke sequelize database values
             req.body.profile_picture = secure_url;
             req.body.profile_picture_id = public_id;
             // Update user
+            let fieldsToUpdate = ["address","name","city_id","profile_picture","profile_picture_id"];
             await User.update(req.body,{
                 where : {
-                    id : +user_id
-                }
+                    username
+                },
+                fields : fieldsToUpdate
                 
             })
             // Menghapus foto profile lama setelah diganti dengan yang baru
             // Kita bisa mendapatkan data foto profile lama dari user yang login melewati jwt
             // console.log(dataUserFromJWT)
             // Melakukan penghapusan resource di cld
-            if (dataUserFromJWT.profile_picture_id) {
-                // await cloudinary.uploader.destroy(dataUserFromJWT.profile_picture_id, {
-                //     resource_type : "image"
-                // });
+            if (userAuth.profile_picture_id) {
                 await deleteAtCld(dataUserFromJWT.profile_picture_id);
             }
             // Delete file uploaded by multer in ~/public/static/images
             fs.unlinkSync(req.file.path);
-            return res.status(200).json(response.success(200,"Success update data"));
+           res.status(200).json(response.success(200,"success update data"));
         }
     } catch (error) {
-        console.log(error);
         // Delete file uploaded by multer in ~/public/static/images
         fs.unlinkSync(req.file.path);
-        res.status(500).json(response.error(500,'Internal Server Error'))
+        next(error);
     }
 
 }
-const getProfileById = async (req,res) => {
+const getProfileById = async (req,res,next) => {
     try {
-        const {user_id} = req.params;
-        // user_id secara default string
+        const {username} = req.params;
+        const userAuth = req.user;
+        if (username !== userAuth.username) {
+            throw new CustomError(401,'you dont have an access')
+        }
         const options = {
             // Exclude berarti saat mengembalikan response,tidak ada data password dan updatedAt
-            attributes: {exclude: ['password','updatedAt']},
+            attributes: {exclude: ['password','updatedAt','profile_picture_id','city_id','confirm_email'
+                                    ,'phone_number','email','username','createdAt','id']},
             where : {
-                id : +user_id
+                username
             },
             include : {
                 model : City,
-                attributes: {exclude: ['createdAt','updatedAt']}
+                attributes: {exclude: ['createdAt','updatedAt','id']}
             }
         };
         const findUser = await User.findOne(options);
         if (!findUser) {
-            return res.status(404).json(response.error(404,"User not found"))
+            throw new CustomError(404,'user not found');
         }
-        return res.status(200).json(response.success(200,findUser))
+        res.status(200).json(response.success(200,findUser))
     } catch (err) {
-        console.log(err);
-        return res.status(500).json(response.error(500,'Internal Server Error'));
+        next(err);
     }
    
 
 
 }
 
+const resendEmail = async (req,res,next) => {
+    try {
+        const {username,email}= req.body;
+        const user = await User.findOne({where : {
+            username,
+            email
+        }})
+        if (!user) {
+            throw new CustomError(404,'user not found')
+        }
+        if (user.confirm_email) {
+            throw new CustomError(403,'email was verified')
+        }
+        // Send email confirmation after success to create new user
+        jwt.sign({
+            user : user.id
+        },
+        process.env.EMAIL_SECRET,
+        {
+            expiresIn: '1d'
+        },
+        async (err,emailToken) => {
+            if (err) {
+                next(err);
+            }
+            const url = `http://localhost:3000${process.env.BASE_URL}${process.env.URL_ROUTER_REGISTER}/confirmation/${emailToken}`
+            const emailTemplate = await generateTemplateEmail({
+                type : "new_account",
+                username : username,
+                confirm_email : url
+            })
+            sendEmailSMTP({
+                receiver : email,
+                subject : "Secondhand - Email Verification",
+                text : `Hi ${username},welcome to Secondhand`,
+                html : emailTemplate
+            })
+           
+        }
+        )
+        res.status(200).json(response.success('sukses resend email'))
 
+    } catch (error) {
+        next(error)        
+    }
+}
 module.exports = {
+    resendEmail,
     createUser,
     login,
     updateProfile,
