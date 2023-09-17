@@ -1,28 +1,12 @@
 require('dotenv').config()
-const morgan = require('morgan')
-const express = require('express')
-const app = express()
-const cors = require('cors')
+const morgan = require('morgan');
+const express = require('express');
+const app = express();
+const cors = require('cors');
 const router = require('./src/router/index');
 const path = require('path');
-const { CustomError } = require('./src/utility/responseModel')
+const {handleErrors,logsErrors} = require('./src/middleware/catchError.middleware');
 
-function logsErrors(err,req,res,next) {
-    console.error(err);
-    next(err);
-}
-function handleErrors(err,req,res,next) {
-
-    let customError = err;
-    if (!(err instanceof CustomError)) {
-        customError = new CustomError();
-    }
-    res.status(customError.status).json({
-        code : customError.status,
-        message : customError.message,
-        info : customError.additionalInfo
-    })
-}
 app.use(cors())
 app.use(morgan(function (tokens, req, res) {
     return [
@@ -38,13 +22,10 @@ app.use(express.urlencoded({
     extended: true
 }))
 app.use('/static',express.static(path.join(__dirname, 'static')))
-app.get('/',(req,res) => {
-    res.status(200).send('Hello FEJS1 X BEJS2')
-})
 // Main Route
 app.use(`${process.env.BASE_URL}`, router)
 
-// Errpr Logs
+// Error Logs
 app.use(logsErrors);
 app.use(handleErrors);
 // Invalid Path

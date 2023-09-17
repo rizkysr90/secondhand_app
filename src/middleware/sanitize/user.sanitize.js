@@ -1,18 +1,18 @@
-const { body, param, query } = require('express-validator');
+const { body, param, query, sanitize } = require("express-validator");
 const create = () => {
-    return [
-        body('email').trim(),
-    ]
-}
+  return [
+    sanitize(["email", "password", "username", "confirm_password"]).trim(),
+  ];
+};
 const update = () => {
-    return [
-        body('city_id').toInt(),
-        body(['name','address']).trim(),
-        param('username').toLowerCase()
-    ]
-}
+  return [
+    body("city_id").toInt(),
+    body(["name", "address"]).trim(),
+    param("username").toLowerCase(),
+  ];
+};
 
 module.exports = {
-    create,
-    update
-}
+  create,
+  update,
+};

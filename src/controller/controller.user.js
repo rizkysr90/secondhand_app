@@ -90,15 +90,16 @@ const createUser = async (req,res,next) => {
 }
 const confirm_email = async (req,res,next) => {
     try {
+        const {emailToken} = req.params;
         let userId
-        jwt.verify(req.params.emailToken,process.env.EMAIL_SECRET,function(err,decoded) {
+        jwt.verify(emailToken,process.env.EMAIL_SECRET,function(err,decoded) {
             if (err) {
                 res.redirect(`http://localhost:3000${process.env.BASE_URL}/invalid`)
             } else {
                 userId = decoded.user
             }
         });
-        const userFindById = User.findByPk(userId);
+        const userFindById = await User.findByPk(userId);
         if (userFindById.confirm_email) {
             res.redirect(`http://localhost:3000${process.env.BASE_URL}/emailconfirmed`)
         } 
