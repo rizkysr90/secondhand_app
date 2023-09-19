@@ -22,27 +22,23 @@ const create = (req, res, next) => {
       .withMessage("email cannot be empty")
       .bail()
       .isEmail()
-      .withMessage("invalid email format")
+      .withMessage("invalid email format"),
+    body("username")
+      .notEmpty()
+      .withMessage("username cannot be empty")
       .bail()
-      .isString()
-      .withMessage("email should be a string"),
-    body("username").notEmpty().withMessage("username cannot be empty").bail(),
-    body("password").notEmpty().withMessage("password cannot be empty").bail(),
-    body("confirm_password")
+      .isAlphanumeric()
+      .withMessage("username should only contains alphanumeric")
+      .bail()
+      .isLength({
+        min: 6,
+        max: 16,
+      })
+      .withMessage("username should be minimum 6 and maximum 16 character"),
+    body("password")
       .notEmpty()
-      .withMessage("confirmation password cannot be empty")
-      .bail(),
-
-    body("password", "password does'nt meet the requirement")
-      .notEmpty()
-      .not()
-      .contains(" ")
-      .bail(),
-    body("username", "username can't be empty").notEmpty().bail(),
-    body(
-      "password",
-      "password must be minimal 1 uppercase,1 lowercase,1 simbol,1 number and the min length is 8 char"
-    )
+      .withMessage("password cannot be empty")
+      .bail()
       .isStrongPassword({
         minLength: 8,
         minLowercase: 1,
@@ -50,11 +46,12 @@ const create = (req, res, next) => {
         minNumbers: 1,
         minSymbols: 1,
       })
-      .bail(),
-    body("username", "username does'nt meet the requirement")
-      .not()
-      .contains(" ")
-      .isAlphanumeric()
+      .withMessage(
+        "password must be minimal 1 uppercase,1 lowercase,1 simbol,1 number, and minimum length is 8 char"
+      ),
+    body("confirm_password")
+      .notEmpty()
+      .withMessage("confirmation password cannot be empty")
       .bail(),
   ];
 };
